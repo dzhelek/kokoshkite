@@ -14,8 +14,8 @@ int ledPin = 32;
 float average;
 
 //wifi
-char* ssid = "7702knuprebyC";
-char* password = "3>ciM6Q#~_";
+char* ssid = "??";
+char* password = "??";
 IPAddress ip;
 
 void setup() {
