@@ -1,59 +1,46 @@
-#include <WiFi.h>
-#include <WiFiClient.h>
-//#include <HttpClient.h>
 #include <Arduino_JSON.h>
+#include <WiFi.h>
 #include <HTTPClient.h>
 
 
-
-
-
 //wifi
-const char* ssid = "7702knuprebyC";
-const char* password = "3>ciM6Q#~_";
+char* ssid = "7702knuprebyC";
+char* password = "3>ciM6Q#~_";
 IPAddress ip;
 
 void setup() {
   Serial.begin(115200);
   wifi();
-  delay(2000);
-  Serial.println("opa");
-//  json(); 
+  delay(1000);
+
 }
 
 void loop() {
-  HTTPClient http;
-  http.begin("http://ip.jsontest.com/?callback=someFunction");
-  int httpCode = http.GET();
-  if (httpCode > 0) {
-   
-    String payload = http.getString();
-    Serial.println(httpCode);
-    Serial.println(payload);
-    
-  }
-  http.end();
-
-  delay(30000);
-  
+  json();
 }
 
 
 void wifi() {
   WiFi.begin(ssid, password);
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi connected");  
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Connecting...");
     delay (1000);
-    ip = WiFi.localIP();
-    Serial.println(ip);
-  } 
+  }
+  while(1) {
+    if (WiFi.status() == WL_CONNECTED) {
+        ip = WiFi.localIP();
+        Serial.println(ip);
+        break;
+    }
+  }
 }
 
-/*void json() { 
-  
-  client.get("http://ip.jsontest.com/?callback=someFunction");
-  char c = client.read();
-  Serial.print(c);
-  Serial.print("MAIKATI");
+void json() {
+  HTTPClient http;
+  http.begin("http://ip.jsontest.com/?callback=someFunction");
+  int httpCode = http.GET();
+  String payload = http.getString();
+  Serial.println(payload);
+  http.end();
+  delay(30000);
 }
-*/
