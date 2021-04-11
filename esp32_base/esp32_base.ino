@@ -4,12 +4,16 @@
 
 //temp_sens
 #define THERMISTORNOMINAL 10000
-#define TEMPERATURENOMINAL 21
+#define TEMPERATURENOMINAL 23
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
+#define ledPin 32
+#define tempPin 33
+#define wlPin 35
 
-//pins
-int ledPin = 32;
+
+
+int wl_sens = 0;
 
 float average;
 
@@ -26,10 +30,15 @@ void setup() {
 }
 
 void loop() {
-  json();
+  //json();
   int temp_s  = measure_temp();
+  int wl_s = measure_wl();
   if (temp_s < 24) low_temp();
   else digitalWrite(ledPin, LOW);
+  if (wl_s < 20) low_wl();
+  Serial.println(" ");
+  Serial.println(" ");
+  delay(1000);
 }
 
 
@@ -59,7 +68,7 @@ void json() {
 }
 
 int measure_temp() {
-    average = analogRead(33);
+    average = analogRead(tempPin);
     average = 4095 / average - 1;
     average = SERIESRESISTOR / average;
     float temperature;
@@ -76,6 +85,19 @@ int measure_temp() {
 }
 
 void low_temp() { 
-  ///when the temp is low, turn on the heater and the signalling led, send notification
-  digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPin, HIGH); //turn on the led
+  Serial.println("The temperature is low!"); //send notification
+  //turn on heater 
+}
+
+int measure_wl() {
+  wl_sens = analogRead(wlPin) / 100;
+  Serial.print("Water Level: ");
+  Serial.println(wl_sens);
+  return (wl_sens);
+}
+
+void low_wl() {
+  Serial.println("The water level is low!");
+  //digitalWrite(ledPin, HIGH);
 }
