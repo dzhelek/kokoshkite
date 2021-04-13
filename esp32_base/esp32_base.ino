@@ -33,14 +33,16 @@ void setup() {
 }
 
 void loop() {
-  json();
-  int temp_s  = measure_temp();
+  putjs();
+  getjs();
+/*  int temp_s  = measure_temp();
   int wl_s = measure_wl();
   if (temp_s < 24) low_temp();
   else digitalWrite(ledPin, LOW);
   if (wl_s < 20) low_wl();
   Serial.println(" ");
   Serial.println(" ");
+  */
   delay(1000);
 }
 
@@ -60,15 +62,37 @@ void wifi() {
   }
 }
 
-void json() {
+void getjs() {
   HTTPClient http;
-  http.begin("http://localhost:8000/?format=json");
+  http.begin("https://kokoshkite.pythonanywhere.com/sensors");
   int httpCode = http.GET();
   String payload = http.getString();
   Serial.println(payload);
+  JSONVar myObject = JSON.parse(payload);
+  Serial.println(int(myObject["water_level"])+1);
   http.end();
   delay(1000);
 }
+
+void putjs() {
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/sensors");
+  //String payload = http.getString();
+  JSONVar myObject;
+  myObject["water_level"] = 50;
+  myObject["temperature"] = 25;
+  String data_t = JSON.stringify(myObject);
+  http.addHeader("Content-Type", "application/json");
+  int httpCode = http.PUT(data_t);
+  Serial.println(http.getString());
+  
+  //Serial.println(payload);
+  //JSONVar myObject = JSON.parse(payload);
+  //Serial.println(int(myObject["water_level"])+1);
+  http.end();
+  delay(1000);
+}
+
 
 int measure_temp() {
     average = analogRead(tempPin);
