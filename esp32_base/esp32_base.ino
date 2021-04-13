@@ -1,12 +1,11 @@
 #include <Arduino_JSON.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-
 #include "WiFiCredentials.h"
 
 //temp_sens
 #define THERMISTORNOMINAL 10000
-#define TEMPERATURENOMINAL 21
+#define TEMPERATURENOMINAL 15
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
 #define ledPin 32
@@ -20,8 +19,10 @@ int wl_sens = 0;
 
 float average;
 
-//wifi
 IPAddress ip;
+
+int measure_temp();
+int measure_wl();
 
 void setup() {
   pinMode(ledPin, OUTPUT);
@@ -33,17 +34,17 @@ void setup() {
 }
 
 void loop() {
-  putjs();
-  getjs();
-/*  int temp_s  = measure_temp();
+  int temp_s  = measure_temp();
   int wl_s = measure_wl();
-  if (temp_s < 24) low_temp();
+  if (temp_s < 18) low_temp();
   else digitalWrite(ledPin, LOW);
   if (wl_s < 20) low_wl();
   Serial.println(" ");
   Serial.println(" ");
-  */
-  delay(1000);
+  put_sens(temp_s, wl_s);
+  getjs();
+  
+  delay(30000);
 }
 
 
@@ -69,26 +70,21 @@ void getjs() {
   String payload = http.getString();
   Serial.println(payload);
   JSONVar myObject = JSON.parse(payload);
-  Serial.println(int(myObject["water_level"])+1);
+  Serial.println(int(myObject["water_level"]));
   http.end();
   delay(1000);
 }
 
-void putjs() {
+void put_sens(int temp_s, int wl_s) {
   HTTPClient http;
   http.begin("https://kokoshkite.pythonanywhere.com/sensors");
-  //String payload = http.getString();
   JSONVar myObject;
-  myObject["water_level"] = 50;
-  myObject["temperature"] = 25;
+  myObject["water_level"] = wl_s;
+  myObject["temperature"] = temp_s;
   String data_t = JSON.stringify(myObject);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.PUT(data_t);
-  Serial.println(http.getString());
-  
-  //Serial.println(payload);
-  //JSONVar myObject = JSON.parse(payload);
-  //Serial.println(int(myObject["water_level"])+1);
+  //Serial.println(http.getString());
   http.end();
   delay(1000);
 }
@@ -105,9 +101,9 @@ int measure_temp() {
     temperature += 1.0 / (TEMPERATURENOMINAL + 273.15); 
     temperature = 1.0 / temperature;
     temperature -= 273.15; 
-    Serial.print("Temperature: "); 
-    Serial.print(temperature);
-    Serial.println("°C");   
+//    Serial.print("Temperature: "); 
+ //   Serial.print(temperature);
+ //   Serial.println("°C");   
     return (temperature);
 }
 
@@ -119,8 +115,8 @@ void low_temp() {
 
 int measure_wl() {
   wl_sens = analogRead(wlPin) / 100;
-  Serial.print("Water Level: ");
-  Serial.println(wl_sens);
+//  Serial.print("Water Level: ");
+ // Serial.println(wl_sens);
   return (wl_sens);
 }
 

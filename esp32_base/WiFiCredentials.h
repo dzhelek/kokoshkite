@@ -1,2 +1,2 @@
-#define CUSTOM_SSID "PhsnJDA1"
-#define CUSTOM_PASSWORD "b8682383G#c"
+#define CUSTOM_SSID "7702knuprebyC"
+#define CUSTOM_PASSWORD "3>ciM6Q#~_"
