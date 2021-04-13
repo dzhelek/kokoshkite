@@ -30,21 +30,26 @@ void setup() {
   pinMode(heaterPin, OUTPUT);
   Serial.begin(115200);
   wifi();
+  //get_time(); 
+  get_motorset();
+  //get_notif();
   delay(1000);  
 }
 
 void loop() {
+  
   int temp_s  = measure_temp();
   int wl_s = measure_wl();
   if (temp_s < 18) low_temp();
-  else digitalWrite(ledPin, LOW);
+  else heater_off();
+  
   if (wl_s < 20) low_wl();
   Serial.println(" ");
   Serial.println(" ");
   put_sens(temp_s, wl_s);
   getjs();
   
-  delay(30000);
+  delay(15000);
 }
 
 
@@ -74,6 +79,47 @@ void getjs() {
   http.end();
   delay(1000);
 }
+void get_notif() {
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/notifications");
+  int httpCode = http.GET();
+  String payload = http.getString();
+  Serial.println(payload);
+  JSONVar myObject = JSON.parse(payload);
+  Serial.println(myObject["has_not_water"]);
+  Serial.println(myObject["has_not_food"]);
+  Serial.println(myObject["is_heater_on"]);
+  Serial.println(myObject["is_motor_on"]);
+  http.end();
+  delay(1000);  
+}
+
+void get_motorset() {
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/settings/motor/");
+  int httpCode = http.GET();
+  String payload = http.getString();
+  Serial.println(payload);
+  JSONVar myObject = JSON.parse(payload);
+  Serial.println(myObject[0]["time_on"]);
+  Serial.println(myObject[2]["time_off"]);
+  http.end();
+  delay(1000);  
+
+}
+
+void get_time() {
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/settings/timing/");
+  int httpCode = http.GET();
+  String payload = http.getString();
+  Serial.println(payload);
+  JSONVar myObject = JSON.parse(payload);
+  Serial.println(myObject["last_filled"]);
+  Serial.println(myObject["finishing_time"]);
+  http.end();
+  delay(1000);
+}
 
 void put_sens(int temp_s, int wl_s) {
   HTTPClient http;
@@ -84,7 +130,7 @@ void put_sens(int temp_s, int wl_s) {
   String data_t = JSON.stringify(myObject);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.PUT(data_t);
-  //Serial.println(http.getString());
+  Serial.println(http.getString());
   http.end();
   delay(1000);
 }
@@ -109,8 +155,21 @@ int measure_temp() {
 
 void low_temp() { 
   digitalWrite(ledPin, HIGH); //turn on the led
+  digitalWrite(heaterPin, HIGH);
   Serial.println("The temperature is low!"); //send notification
-  //turn on heater 
+  Serial.println("The heater is on!");
+  
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/notifications");
+  JSONVar myObject;
+  myObject["is_heater_on"] = "True";
+  String data_t = JSON.stringify(myObject);
+  http.addHeader("Content-Type", "application/json");
+  int httpCode = http.PUT(data_t);
+  Serial.println(http.getString());
+  http.end();
+  delay(1000);
+  
 }
 
 int measure_wl() {
@@ -130,8 +189,19 @@ void motor() {
   Serial.println("The motor is on!");  
 }
 
-void heater() {
-  digitalWrite(heaterPin, HIGH);
-  Serial.println("The heater is on!");
-  
+
+
+void heater_off() {
+  digitalWrite(ledPin, LOW);
+  digitalWrite(heaterPin, LOW);
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/notifications");
+  JSONVar myObject;
+  myObject["is_heater_on"] = "False";
+  String data_t = JSON.stringify(myObject);
+  http.addHeader("Content-Type", "application/json");
+  int httpCode = http.PUT(data_t);
+  Serial.println(http.getString());
+  http.end();
+  delay(1000);
 }
