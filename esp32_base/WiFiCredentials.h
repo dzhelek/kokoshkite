@@ -1,0 +1,2 @@
+#define CUSTOM_SSID "PhsnJDA1"
+#define CUSTOM_PASSWORD "b8682383G#c"
