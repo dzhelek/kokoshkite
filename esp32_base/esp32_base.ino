@@ -4,13 +4,14 @@
 
 //temp_sens
 #define THERMISTORNOMINAL 10000
-#define TEMPERATURENOMINAL 23
+#define TEMPERATURENOMINAL 21
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
 #define ledPin 32
 #define tempPin 33
 #define wlPin 35
-
+#define motorPin 34
+#define heaterPin 22
 
 
 int wl_sens = 0;
@@ -18,19 +19,21 @@ int wl_sens = 0;
 float average;
 
 //wifi
-char* ssid = "??";
-char* password = "??";
+char* ssid = "7702knuprebyC";
+char* password = "3>ciM6Q#~_";
 IPAddress ip;
 
 void setup() {
   pinMode(ledPin, OUTPUT);
+  pinMode(motorPin, OUTPUT);
+  pinMode(heaterPin, OUTPUT);
   Serial.begin(115200);
   wifi();
   delay(1000);  
 }
 
 void loop() {
-  //json();
+  json();
   int temp_s  = measure_temp();
   int wl_s = measure_wl();
   if (temp_s < 24) low_temp();
@@ -59,7 +62,7 @@ void wifi() {
 
 void json() {
   HTTPClient http;
-  http.begin("http://ip.jsontest.com/?callback=someFunction");
+  http.begin("http://localhost:8000/?format=json");
   int httpCode = http.GET();
   String payload = http.getString();
   Serial.println(payload);
@@ -100,4 +103,15 @@ int measure_wl() {
 void low_wl() {
   Serial.println("The water level is low!");
   //digitalWrite(ledPin, HIGH);
+}
+
+void motor() {
+  digitalWrite(motorPin, HIGH);
+  Serial.println("The motor is on!");  
+}
+
+void heater() {
+  digitalWrite(heaterPin, HIGH);
+  Serial.println("The heater is on!");
+  
 }
