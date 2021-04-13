@@ -2,6 +2,8 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
+#include "WiFiCredentials.h"
+
 //temp_sens
 #define THERMISTORNOMINAL 10000
 #define TEMPERATURENOMINAL 21
@@ -19,8 +21,6 @@ int wl_sens = 0;
 float average;
 
 //wifi
-char* ssid = "7702knuprebyC";
-char* password = "3>ciM6Q#~_";
 IPAddress ip;
 
 void setup() {
@@ -48,7 +48,7 @@ void loop() {
 
 
 void wifi() {
-  WiFi.begin(ssid, password);
+  WiFi.begin(CUSTOM_SSID, CUSTOM_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.println("Connecting...");
     delay (1000);
