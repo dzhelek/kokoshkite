@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "WiFiCredentials.h"
+#include "time.h"
 
 //temp_sens
 #define THERMISTORNOMINAL 10000
@@ -14,6 +15,9 @@
 #define motorPin 34
 #define heaterPin 22
 
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;
 
 int wl_sens = 0;
 
@@ -24,6 +28,21 @@ IPAddress ip;
 int measure_temp();
 int measure_wl();
 
+struct tm timeinfo;
+
+
+
+
+void printLocalTime()
+{
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%H:%M:%S");
+}
+
 void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(motorPin, OUTPUT);
@@ -33,6 +52,12 @@ void setup() {
   //get_time(); 
   get_motorset();
   //get_notif();
+  //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  //printLocalTime();
+  //getLocalTime(&timeinfo);
+  
+  
+  
   delay(1000);  
 }
 
@@ -44,10 +69,12 @@ void loop() {
   else heater_off();
   
   if (wl_s < 20) low_wl();
+  else wl_ok();
   Serial.println(" ");
   Serial.println(" ");
   put_sens(temp_s, wl_s);
   getjs();
+  get_motorset();
   
   delay(15000);
 }
@@ -96,12 +123,13 @@ void get_notif() {
 
 void get_motorset() {
   HTTPClient http;
+  getLocalTime(&timeinfo);
   http.begin("https://kokoshkite.pythonanywhere.com/settings/motor/");
   int httpCode = http.GET();
   String payload = http.getString();
   Serial.println(payload);
   JSONVar myObject = JSON.parse(payload);
-  Serial.println(myObject[0]["time_on"]);
+  Serial.println(int(myObject[0]["time_on"]));
   Serial.println(myObject[2]["time_off"]);
   http.end();
   delay(1000);  
@@ -146,10 +174,7 @@ int measure_temp() {
     temperature /= BCOEFFICIENT;
     temperature += 1.0 / (TEMPERATURENOMINAL + 273.15); 
     temperature = 1.0 / temperature;
-    temperature -= 273.15; 
-//    Serial.print("Temperature: "); 
- //   Serial.print(temperature);
- //   Serial.println("°C");   
+    temperature -= 273.15;  
     return (temperature);
 }
 
@@ -174,14 +199,21 @@ void low_temp() {
 
 int measure_wl() {
   wl_sens = analogRead(wlPin) / 100;
-//  Serial.print("Water Level: ");
- // Serial.println(wl_sens);
   return (wl_sens);
 }
 
 void low_wl() {
   Serial.println("The water level is low!");
-  //digitalWrite(ledPin, HIGH);
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/notifications");
+  JSONVar myObject;
+  myObject["has_not_water"] = "True";
+  String data_t = JSON.stringify(myObject);
+  http.addHeader("Content-Type", "application/json");
+  int httpCode = http.PUT(data_t);
+  Serial.println(http.getString());
+  http.end();
+  delay(1000);
 }
 
 void motor() {
@@ -198,6 +230,20 @@ void heater_off() {
   http.begin("https://kokoshkite.pythonanywhere.com/notifications");
   JSONVar myObject;
   myObject["is_heater_on"] = "False";
+  String data_t = JSON.stringify(myObject);
+  http.addHeader("Content-Type", "application/json");
+  int httpCode = http.PUT(data_t);
+  Serial.println(http.getString());
+  http.end();
+  delay(1000);
+}
+
+void wl_ok() {
+  Serial.println("The water level is low!");
+  HTTPClient http;
+  http.begin("https://kokoshkite.pythonanywhere.com/notifications");
+  JSONVar myObject;
+  myObject["has_not_water"] = "False";
   String data_t = JSON.stringify(myObject);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.PUT(data_t);
