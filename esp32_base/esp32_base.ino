@@ -9,16 +9,14 @@
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
 #define ledPin 32
-#define tempPin 33
+#define tempPin 34
 #define wlPin 35
-#define motorPin 34
+#define motorPin 33
 #define heaterPin 22
 
 int wl_sens = 0;
 
 float average;
-
-IPAddress ip;
 
 int measure_temp();
 int measure_wl();
@@ -37,7 +35,7 @@ void loop() {
   int wl_s = measure_wl();
   if (temp_s < 18) low_temp();
   else heater_off();
-  if (wl_s < 20) low_wl();
+  if (wl_s < 10) low_wl();
   else wl_ok();
   put_sens(temp_s, wl_s);
   get_motorset();
@@ -54,8 +52,7 @@ void wifi() {
   }
   while(1) {
     if (WiFi.status() == WL_CONNECTED) {
-        ip = WiFi.localIP();
-        Serial.println(ip);
+        Serial.println(WiFi.localIP());
         break;
     }
   }
