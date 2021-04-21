@@ -9,9 +9,9 @@
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
 #define ledPin 32
-#define tempPin 33
+#define tempPin 34
 #define wlPin 35
-#define motorPin 34
+#define motorPin 33
 #define heaterPin 22
 
 int wl_sens = 0;
