@@ -18,8 +18,6 @@ int wl_sens = 0;
 
 float average;
 
-IPAddress ip;
-
 int measure_temp();
 int measure_wl();
 
@@ -37,7 +35,7 @@ void loop() {
   int wl_s = measure_wl();
   if (temp_s < 18) low_temp();
   else heater_off();
-  if (wl_s < 20) low_wl();
+  if (wl_s < 10) low_wl();
   else wl_ok();
   put_sens(temp_s, wl_s);
   get_motorset();
@@ -54,8 +52,7 @@ void wifi() {
   }
   while(1) {
     if (WiFi.status() == WL_CONNECTED) {
-        ip = WiFi.localIP();
-        Serial.println(ip);
+        Serial.println(WiFi.localIP());
         break;
     }
   }
