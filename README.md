@@ -1,5 +1,6 @@
 # *kokoshkite* - автоматизирана хранилка за кокошки
 
+Това е главното хранилище! Хранилището за django уебсайта ще намерите [тук](https://github.com/dzhelek/drf).
 
 ![kokoshk](photos/kokoshkite.jpg)
 
